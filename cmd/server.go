@@ -5,11 +5,9 @@ import (
 	"net/http"
 	"os"
 	"time"
-
-	"github.com/julienschmidt/httprouter"
 )
 
-func (app *application) serve(router *httprouter.Router) error {
+func (app *application) serve(router http.Handler) error {
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%s", os.Getenv("PORT")),
 		Handler:      router,

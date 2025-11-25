@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 
@@ -13,7 +12,7 @@ type taskHandler struct {
 	uc usecase.TaskUsecase
 }
 
-func NewTaskHandler(ctx context.Context, r *httprouter.Router, uc usecase.TaskUsecase) {
+func NewTaskHandler(r *httprouter.Router, uc usecase.TaskUsecase) {
 	h := taskHandler{uc}
 
 	r.HandlerFunc(http.MethodGet, "/v1/tasks", h.GetAll)
