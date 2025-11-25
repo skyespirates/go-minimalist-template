@@ -12,11 +12,8 @@ type taskHandler struct {
 	uc usecase.TaskUsecase
 }
 
-func NewTaskHandler(r *httprouter.Router, uc usecase.TaskUsecase) {
-	h := taskHandler{uc}
-
-	r.HandlerFunc(http.MethodGet, "/v1/tasks", h.GetAll)
-	r.HandlerFunc(http.MethodGet, "/v1/tasks/:id", h.GetById)
+func NewTaskHandler(uc usecase.TaskUsecase) *taskHandler {
+	return &taskHandler{uc}
 }
 
 func (th *taskHandler) GetAll(w http.ResponseWriter, r *http.Request) {

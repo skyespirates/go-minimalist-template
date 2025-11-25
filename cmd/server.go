@@ -2,19 +2,22 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"time"
 )
 
-func (app *application) serve(router http.Handler) error {
+func (app *application) serve() error {
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%s", os.Getenv("PORT")),
-		Handler:      router,
+		Handler:      app.routes(),
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
 	}
+
+	log.Println(fmt.Sprintf("server running on port %s", os.Getenv("PORT")))
 
 	return srv.ListenAndServe()
 }

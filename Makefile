@@ -3,7 +3,7 @@ dsn=postgres://postgres:bmwb1gtr@0.0.0.0:5432/api?sslmode=disable
 
 .PHONY: api/start
 api/start:
-	@go run .\cmd\api
+	@go run .\cmd
 
 .PHONY: api/dev
 api/dev:
