@@ -19,6 +19,11 @@ func (app *application) routes() http.Handler {
 
 	router.HandlerFunc(http.MethodGet, "/v1/tasks", taskHandler.GetAll)
 	router.HandlerFunc(http.MethodGet, "/v1/tasks/:id", taskHandler.GetById)
+	router.HandlerFunc(http.MethodPost, "/v1/tasks", taskHandler.Create)
+	router.HandlerFunc(http.MethodPut, "/v1/tasks/:id", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("hello world"))
+	})
+	router.HandlerFunc(http.MethodDelete, "/v1/tasks/:id", taskHandler.Delete)
 
 	return app.loggerMiddleware(router)
 }

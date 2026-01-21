@@ -9,4 +9,6 @@ import (
 type TaskRepository interface {
 	GetAll(context.Context) ([]*entity.Task, error)
 	GetById(context.Context, int) (*entity.Task, error)
+	Create(context.Context, string) (*entity.Task, error)
+	Delete(context.Context, int) (int, error)
 }

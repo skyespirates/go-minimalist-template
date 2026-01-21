@@ -11,6 +11,8 @@ import (
 type TaskUsecase interface {
 	GetAll(context.Context) ([]*entity.Task, error)
 	GetById(context.Context, string) (*entity.Task, error)
+	Create(context.Context, string) (*entity.Task, error)
+	Delete(context.Context, int) (int, error)
 }
 
 type taskUsecase struct {
@@ -43,4 +45,21 @@ func (tu *taskUsecase) GetById(ctx context.Context, id string) (*entity.Task, er
 		return nil, err
 	}
 	return task, nil
+}
+
+func (tu *taskUsecase) Create(ctx context.Context, title string) (*entity.Task, error) {
+	task, err := tu.repo.Create(ctx, title)
+	if err != nil {
+		return nil, err
+	}
+
+	return task, nil
+}
+
+func (tu *taskUsecase) Delete(ctx context.Context, id int) (int, error) {
+	todoId, err := tu.repo.Delete(ctx, id)
+	if err != nil {
+		return 0, err
+	}
+	return todoId, nil
 }
