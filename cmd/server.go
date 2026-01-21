@@ -17,7 +17,7 @@ func (app *application) serve() error {
 		WriteTimeout: 30 * time.Second,
 	}
 
-	log.Println(fmt.Sprintf("server running on port %s", os.Getenv("PORT")))
+	log.Printf("%s", fmt.Sprintf("server running on port %s", os.Getenv("PORT")))
 
 	return srv.ListenAndServe()
 }

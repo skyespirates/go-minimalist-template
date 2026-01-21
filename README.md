@@ -1,3 +1,9 @@
+# Docs
+
+## Diagram
+
+![diagram](./docs/diagram.png)
+
 ## List of Dependencies
 
 1. [golang](https://go.dev/dl/) current version 1.25.4
