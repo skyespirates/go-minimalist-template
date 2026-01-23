@@ -3,5 +3,5 @@ CREATE TABLE IF NOT EXISTS tasks (
     title TEXT NOT NULL,
     is_completed BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMPTZ(0) NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ(0) NOT NULL DEFAULT NOW()
+    updated_at TIMESTAMPTZ(0)
 );

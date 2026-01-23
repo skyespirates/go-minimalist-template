@@ -2,8 +2,12 @@ package usecase
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
+	"net/http"
 	"strconv"
 
+	"github.com/julienschmidt/httprouter"
 	"github.com/skyespirates/go-minimalist-template/internal/entity"
 	"github.com/skyespirates/go-minimalist-template/internal/repository"
 )
@@ -13,6 +17,7 @@ type TaskUsecase interface {
 	GetById(context.Context, string) (*entity.Task, error)
 	Create(context.Context, string) (*entity.Task, error)
 	Delete(context.Context, int) (int, error)
+	Update(context.Context, *http.Request) (*entity.Task, error)
 }
 
 type taskUsecase struct {
@@ -62,4 +67,43 @@ func (tu *taskUsecase) Delete(ctx context.Context, id int) (int, error) {
 		return 0, err
 	}
 	return todoId, nil
+}
+
+func (tu *taskUsecase) Update(ctx context.Context, r *http.Request) (*entity.Task, error) {
+	rawId := httprouter.ParamsFromContext(r.Context()).ByName("id")
+
+	id, err := strconv.Atoi(rawId)
+	if err != nil {
+		return nil, errors.New("invalid id")
+	}
+
+	task, err := tu.repo.GetById(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	var input struct {
+		Title       *string `json:"title"`
+		IsCompleted *bool   `json:"is_completed"`
+	}
+
+	err = json.NewDecoder(r.Body).Decode(&input)
+	if err != nil {
+		return nil, err
+	}
+
+	if input.Title != nil {
+		task.Title = *input.Title
+	}
+
+	if input.IsCompleted != nil {
+		task.IsCompleted = *input.IsCompleted
+	}
+
+	task, err = tu.repo.Update(ctx, task)
+	if err != nil {
+		return nil, err
+	}
+
+	return task, nil
 }

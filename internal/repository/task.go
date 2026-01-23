@@ -11,4 +11,5 @@ type TaskRepository interface {
 	GetById(context.Context, int) (*entity.Task, error)
 	Create(context.Context, string) (*entity.Task, error)
 	Delete(context.Context, int) (int, error)
+	Update(context.Context, *entity.Task) (*entity.Task, error)
 }

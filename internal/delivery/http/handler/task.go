@@ -19,6 +19,7 @@ func NewTaskHandler(uc usecase.TaskUsecase) *taskHandler {
 }
 
 func (th *taskHandler) GetAll(w http.ResponseWriter, r *http.Request) {
+
 	tasks, err := th.uc.GetAll(r.Context())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -29,7 +30,11 @@ func (th *taskHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 		"data": tasks,
 	}
 
-	json.NewEncoder(w).Encode(resp)
+	err = json.NewEncoder(w).Encode(resp)
+	if err != nil {
+		log.Printf("error: %s", err.Error())
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+	}
 }
 
 func (th *taskHandler) GetById(w http.ResponseWriter, r *http.Request) {
@@ -45,7 +50,11 @@ func (th *taskHandler) GetById(w http.ResponseWriter, r *http.Request) {
 		"data": task,
 	}
 
-	json.NewEncoder(w).Encode(resp)
+	err = json.NewEncoder(w).Encode(resp)
+	if err != nil {
+		log.Printf("error: %s", err.Error())
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+	}
 }
 
 func (th *taskHandler) Create(w http.ResponseWriter, r *http.Request) {
@@ -69,7 +78,11 @@ func (th *taskHandler) Create(w http.ResponseWriter, r *http.Request) {
 	response := make(map[string]any)
 	response["message"] = "task created successfully"
 	response["task"] = task
-	json.NewEncoder(w).Encode(response)
+	err = json.NewEncoder(w).Encode(response)
+	if err != nil {
+		log.Printf("error: %s", err.Error())
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+	}
 }
 
 func (th *taskHandler) Delete(w http.ResponseWriter, r *http.Request) {
@@ -92,5 +105,25 @@ func (th *taskHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	response["message"] = "todo deleted successfully"
 	response["id"] = deletedId
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	err = json.NewEncoder(w).Encode(response)
+	if err != nil {
+		log.Printf("error: %s", err.Error())
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+	}
+}
+
+func (th *taskHandler) Update(w http.ResponseWriter, r *http.Request) {
+	updatedTask, err := th.uc.Update(r.Context(), r)
+	res := make(map[string]any)
+	if err != nil {
+		res["status"] = "error"
+		res["message"] = err.Error()
+		_ = json.NewEncoder(w).Encode(res)
+		return
+	}
+
+	res["status"] = "success"
+	res["message"] = "updated successfully"
+	res["task"] = updatedTask
+	json.NewEncoder(w).Encode(res)
 }
