@@ -45,6 +45,8 @@ func (ur *userRepo) Create(ctx context.Context, payload entity.RegisterPayload) 
 
 }
 
+var ErrNotFound = errors.New("user not found")
+
 func (ur *userRepo) FindByEmail(ctx context.Context, email string) (*entity.User, error) {
 	query := `SELECT id, name, email, password, created_at, updated_at, version FROM users WHERE email = $1`
 
@@ -55,6 +57,9 @@ func (ur *userRepo) FindByEmail(ctx context.Context, email string) (*entity.User
 
 	err := ur.db.QueryRowContext(ctx, query, email).Scan(&u.Id, &u.Name, &u.Email, &u.Password, &u.CreatedAt, &u.UpdatedAt, &u.Version)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrNotFound
+		}
 		return nil, err
 	}
 

@@ -27,7 +27,7 @@ func (app *application) routes() http.Handler {
 	router.HandlerFunc(http.MethodPut, "/v1/tasks/:id", app.authenticate(taskHandler.Update))
 	router.HandlerFunc(http.MethodDelete, "/v1/tasks/:id", taskHandler.Delete)
 
-	return app.loggerMiddleware(router)
+	return app.loggerMiddleware(app.corsMiddleware(router))
 }
 
 func index(w http.ResponseWriter, r *http.Request) {

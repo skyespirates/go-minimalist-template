@@ -59,6 +59,10 @@ func (h *userHandler) Login(w http.ResponseWriter, r *http.Request) {
 	token, err := h.uc.Login(r.Context(), &payload)
 	if err != nil {
 		log.Printf("error: %s", err.Error())
+		if errors.Is(err, pgsql.ErrNotFound) {
+			http.Error(w, "invalid email or password", http.StatusUnauthorized)
+			return
+		}
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return
 	}
