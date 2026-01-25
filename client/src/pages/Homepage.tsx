@@ -5,6 +5,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { getTasks, createTask } from "@/services/tasks";
 import { queryClient } from "@/main";
 import { useState } from "react";
+import { Modals } from "@/components/Dialog";
 
 const Homepage = () => {
   const [title, setTitle] = useState("");
@@ -37,6 +38,10 @@ const Homepage = () => {
           >
             Add Task
           </Button>
+        </div>
+
+        <div>
+          <Modals />
         </div>
 
         {isPending && <p>Loading...🐔</p>}

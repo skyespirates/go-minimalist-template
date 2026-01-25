@@ -6,6 +6,8 @@ import Homepage from "@/pages/Homepage.tsx";
 import Register from "@/pages/Register.tsx";
 import Login from "@/pages/Login.tsx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import ProtectedRoute from "./components/ProtectedRoute";
+import PublicRoute from "./components/PublicRoute";
 
 export const queryClient = new QueryClient();
 
@@ -14,9 +16,13 @@ createRoot(document.getElementById("root")!).render(
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Routes>
-          <Route index element={<Homepage />} />
-          <Route path="register" element={<Register />} />
-          <Route path="login" element={<Login />} />
+          <Route element={<ProtectedRoute />}>
+            <Route index element={<Homepage />} />
+          </Route>
+          <Route element={<PublicRoute />}>
+            <Route path="register" element={<Register />} />
+            <Route path="login" element={<Login />} />
+          </Route>
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>
