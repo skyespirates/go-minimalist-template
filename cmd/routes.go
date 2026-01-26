@@ -1,12 +1,14 @@
 package main
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/skyespirates/go-minimalist-template/internal/delivery/http/handler"
 	"github.com/skyespirates/go-minimalist-template/internal/infra/pgsql"
 	"github.com/skyespirates/go-minimalist-template/internal/usecase"
+	"github.com/skyespirates/go-minimalist-template/internal/utils"
 )
 
 func (app *application) routes() http.Handler {
@@ -26,6 +28,56 @@ func (app *application) routes() http.Handler {
 	router.HandlerFunc(http.MethodPost, "/v1/tasks", app.authenticate(taskHandler.Create))
 	router.HandlerFunc(http.MethodPut, "/v1/tasks/:id", app.authenticate(taskHandler.Update))
 	router.HandlerFunc(http.MethodDelete, "/v1/tasks/:id", taskHandler.Delete)
+
+	router.HandlerFunc(http.MethodPost, "/generate-key", func(w http.ResponseWriter, r *http.Request) {
+		res := make(map[string]string)
+
+		res["key"] = utils.GenerateKey()
+
+		json.NewEncoder(w).Encode(res)
+	})
+
+	router.HandlerFunc(http.MethodPost, "/encrypt", func(w http.ResponseWriter, r *http.Request) {
+		var input struct {
+			Key  string `json:"key"`
+			Text string `json:"text"`
+		}
+
+		err := json.NewDecoder(r.Body).Decode(&input)
+		if err != nil {
+			http.Error(w, "bad request", http.StatusBadRequest)
+			return
+		}
+
+		result := utils.Encrypt(input.Key, input.Text)
+
+		res := make(map[string]string)
+		res["encrypted"] = result
+		err = json.NewEncoder(w).Encode(res)
+		if err != nil {
+			http.Error(w, "error on json encoder", http.StatusInternalServerError)
+		}
+	})
+
+	router.HandlerFunc(http.MethodPost, "/decrypt", func(w http.ResponseWriter, r *http.Request) {
+		var input struct {
+			Key  string `json:"key"`
+			Text string `json:"text"`
+		}
+
+		err := json.NewDecoder(r.Body).Decode(&input)
+		if err != nil {
+			http.Error(w, "bad request", http.StatusBadRequest)
+			return
+		}
+
+		decoded := utils.Decrypt(input.Key, input.Text)
+		res := make(map[string]string)
+		res["decrypted"] = decoded
+
+		json.NewEncoder(w).Encode(res)
+
+	})
 
 	return app.loggerMiddleware(app.corsMiddleware(router))
 }
