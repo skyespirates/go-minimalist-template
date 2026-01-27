@@ -48,6 +48,10 @@ func (app *application) routes() http.Handler {
 			http.Error(w, "bad request", http.StatusBadRequest)
 			return
 		}
+		if input.Key == "" || input.Text == "" {
+			http.Error(w, "bad request, key and text are required", http.StatusBadRequest)
+			return
+		}
 
 		result := utils.Encrypt(input.Key, input.Text)
 
@@ -68,6 +72,10 @@ func (app *application) routes() http.Handler {
 		err := json.NewDecoder(r.Body).Decode(&input)
 		if err != nil {
 			http.Error(w, "bad request", http.StatusBadRequest)
+			return
+		}
+		if input.Key == "" || input.Text == "" {
+			http.Error(w, "bad request, key and encrypted text are required", http.StatusBadRequest)
 			return
 		}
 
