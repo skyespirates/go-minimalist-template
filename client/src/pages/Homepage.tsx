@@ -6,10 +6,11 @@ import { getTasks, createTask } from "@/services/tasks";
 import { queryClient } from "@/main";
 import { useState } from "react";
 import { Modals } from "@/components/Dialog";
+import { Link } from "react-router";
 
 const Homepage = () => {
   const [title, setTitle] = useState("");
-  const { isPending, isSuccess, isError, error, data } = useQuery({
+  const { isLoading, isSuccess, isError, error, data } = useQuery({
     queryKey: ["tasks"],
     queryFn: getTasks,
     refetchOnWindowFocus: false,
@@ -24,6 +25,11 @@ const Homepage = () => {
   return (
     <div className="grid place-items-center min-h-dvh">
       <div className="w-96 border-2 p-4 rounded-sm shadow-sm flex flex-col gap-4">
+        <div className="text-center">
+          <Link to="/labs" className="text-purple-400 hover:underline">
+            labs
+          </Link>
+        </div>
         <div className="flex gap-2">
           <Input
             placeholder="what is your plan today?"
@@ -44,11 +50,12 @@ const Homepage = () => {
           <Modals />
         </div>
 
-        {isPending && <p>Loading...🐔</p>}
+        {isLoading && <p>Loading...🐔</p>}
 
         {isError && <div className="overflow-auto">error: {error.message}</div>}
 
         {isSuccess &&
+          Array.isArray(data) &&
           data.map((task: any) => {
             return (
               <div

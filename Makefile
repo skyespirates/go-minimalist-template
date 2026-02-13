@@ -1,5 +1,5 @@
 migrations_path=./migrations
-dsn=postgres://postgres:bmwb1gtr@0.0.0.0:5432/api?sslmode=disable
+dsn=postgres://postgres:secret@0.0.0.0:5432/api?sslmode=disable
 
 .PHONY: api/start
 api/start:

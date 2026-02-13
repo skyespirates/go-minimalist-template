@@ -7,6 +7,8 @@ import {
   decryptText,
 } from "@/services/encrypt-decrypt";
 import { useState } from "react";
+import { Link } from "react-router";
+
 const EncryptDecrypt = () => {
   const generateKeyMutation = useMutation({
     mutationFn: generateKey,
@@ -36,6 +38,11 @@ const EncryptDecrypt = () => {
   return (
     <div className="min-h-dvh flex justify-center items-baseline">
       <div className="flex flex-col gap-4 w-3xl border-2 mt-12 p-4 rounded-sm shadow-sm">
+        <div className="text-center">
+          <Link to="/" className="text-purple-400 hover:underline">
+            homepage
+          </Link>
+        </div>
         <div className="border-2 rounded-sm shadow-sm">
           <div className="flex flex-col justify-center gap-4">
             <h1 className="text-center text-4xl">{key}</h1>

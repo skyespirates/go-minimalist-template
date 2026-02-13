@@ -1,38 +1,56 @@
 package utils
 
 import (
-	"log"
-	"maps"
+	"math/rand"
 	"strings"
 )
 
-var chars = map[string]struct{}{
-	"a": {},
-	"b": {},
-	"c": {},
-	"d": {},
-	"e": {},
-	"f": {},
-	"g": {},
-	"h": {},
-	"i": {},
-	"j": {},
-	"k": {},
-	"l": {},
-	"m": {},
-	"n": {},
-	"o": {},
-	"p": {},
-	"q": {},
-	"r": {},
-	"s": {},
-	"t": {},
-	"u": {},
-	"v": {},
-	"w": {},
-	"x": {},
-	"y": {},
-	"z": {},
+// map []string to []rune
+func mapStringToRune(in []string, f func(s string) rune) []rune {
+
+	result := []rune{}
+
+	for _, val := range in {
+		result = append(result, f(val))
+	}
+
+	return result
+
+}
+
+// map []rune to []string
+func mapRuneToString(in []rune, f func(r rune) string) []string {
+
+	result := []string{}
+
+	for _, val := range in {
+		result = append(result, f(val))
+	}
+
+	return result
+
+}
+
+func findMatch(dictionary map[rune]rune, in rune) rune {
+
+	var char rune
+	v, ok := dictionary[in]
+
+	if !ok {
+		if in >= 65 && in <= 90 {
+			lower := in + 32           // to lowercase
+			match := dictionary[lower] // find matched key
+			upper := match - 32        // to uppercase
+			char = upper
+		} else {
+			char = in
+		}
+	} else {
+		char = v
+	}
+
+	return char
+
 }
 
 func getAlphabets() []rune {
@@ -46,83 +64,60 @@ func getAlphabets() []rune {
 }
 
 func GenerateKey() string {
-	keys := make([]string, 26)
-	copyChars := make(map[string]struct{}, len(chars))
-
-	maps.Copy(copyChars, chars)
-	for k := range copyChars {
-		keys = append(keys, k)
-		delete(copyChars, k)
+	alphabets := getAlphabets()
+	stringKeys := make([]string, len(alphabets))
+	for i, val := range alphabets {
+		stringKeys[i] = string(val)
 	}
 
-	key := strings.Join(keys, "")
+	rand.Shuffle(len(stringKeys), func(i, j int) {
+		stringKeys[i], stringKeys[j] = stringKeys[j], stringKeys[i]
+	})
+
+	key := strings.Join(stringKeys, "")
 	return key
 }
 
 func Encrypt(key, text string) string {
 	alphabets := getAlphabets()
-	splitKey := strings.Split(key, "")
-	splitText := strings.Split(text, "")
+	splitKey := mapStringToRune(strings.Split(key, ""), func(s string) rune { return []rune(s)[0] })
+	splitText := mapStringToRune(strings.Split(text, ""), func(s string) rune { return []rune(s)[0] })
 
 	result := []rune{}
-	mapping := make(map[rune]rune)
-	for i := 0; i < len(alphabets); i++ {
-		mapping[alphabets[i]] = []rune(splitKey[i])[0]
+	dictionary := make(map[rune]rune)
+
+	for i, val := range alphabets {
+		dictionary[val] = splitKey[i]
 	}
 
 	for _, val := range splitText {
-		char := []rune(val)[0]
-		var txt rune
-		e, ok := mapping[char]
-		txt = e
-		if !ok {
-			code := int(char)
-			if code >= 65 && code <= 90 {
-				code = code + 32            // to lowercase
-				temp := mapping[rune(code)] // find matched key
-				code = int(temp) - 32       // to uppercase
-				txt = rune(code)
-			} else {
-				txt = char
-			}
-		}
+		char := findMatch(dictionary, val)
 
-		result = append(result, txt)
+		result = append(result, char)
 	}
 	return string(result)
 }
 
 func Decrypt(key, encrypted string) string {
 	alphabets := getAlphabets()
-
-	splitKey := strings.Split(key, "")
-	splitEncrypted := strings.Split(encrypted, "")
+	splitKey := mapStringToRune(strings.Split(key, ""), func(s string) rune { return []rune(s)[0] })
+	splitEncrypted := mapStringToRune(strings.Split(encrypted, ""), func(s string) rune { return []rune(s)[0] })
 
 	dictionary := make(map[rune]rune)
-	for i := 0; i < len(alphabets); i++ {
-		char := []rune(splitKey[i])[0]
-		dictionary[char] = alphabets[i]
+
+	for i, val := range splitKey {
+		dictionary[val] = alphabets[i]
 	}
 
-	var result []rune
-	var txt rune
+	result := []rune{}
+
 	for _, val := range splitEncrypted {
-		char := []rune(val)[0]
-		ch, ok := dictionary[char]
-		txt = ch
-		if !ok {
-			code := int(char)
-			log.Printf("%v, %d", string(char), code)
-			if code >= 65 && ch <= 90 {
-				code = code + 32
-				temp := dictionary[rune(code)]
-				code = int(temp) - 32
-				txt = rune(code)
-			} else {
-				txt = char
-			}
-		}
-		result = append(result, txt)
+		char := findMatch(dictionary, val)
+
+		result = append(result, char)
 	}
-	return string(result)
+
+	r := mapRuneToString(result, func(r rune) string { return string(r) })
+
+	return strings.Join(r, "")
 }
