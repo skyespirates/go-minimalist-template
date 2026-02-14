@@ -31,6 +31,21 @@ func mapRuneToString(in []rune, f func(r rune) string) []string {
 
 }
 
+// contoh penggunaan generic
+type Char interface {
+	rune | string
+}
+
+func MapSlice[T Char, U Char](in []T, f func(T) U) []U {
+	result := make([]U, 0)
+
+	for _, val := range in {
+		result = append(result, f(val))
+	}
+
+	return result
+}
+
 func findMatch(dictionary map[rune]rune, in rune) rune {
 
 	var char rune
@@ -80,8 +95,8 @@ func GenerateKey() string {
 
 func Encrypt(key, text string) string {
 	alphabets := getAlphabets()
-	splitKey := mapStringToRune(strings.Split(key, ""), func(s string) rune { return []rune(s)[0] })
-	splitText := mapStringToRune(strings.Split(text, ""), func(s string) rune { return []rune(s)[0] })
+	splitKey := MapSlice[string, rune](strings.Split(key, ""), func(s string) rune { return []rune(s)[0] })
+	splitText := MapSlice[string, rune](strings.Split(text, ""), func(s string) rune { return []rune(s)[0] })
 
 	result := []rune{}
 	dictionary := make(map[rune]rune)
@@ -100,8 +115,8 @@ func Encrypt(key, text string) string {
 
 func Decrypt(key, encrypted string) string {
 	alphabets := getAlphabets()
-	splitKey := mapStringToRune(strings.Split(key, ""), func(s string) rune { return []rune(s)[0] })
-	splitEncrypted := mapStringToRune(strings.Split(encrypted, ""), func(s string) rune { return []rune(s)[0] })
+	splitKey := MapSlice[string, rune](strings.Split(key, ""), func(s string) rune { return []rune(s)[0] })
+	splitEncrypted := MapSlice[string, rune](strings.Split(encrypted, ""), func(s string) rune { return []rune(s)[0] })
 
 	dictionary := make(map[rune]rune)
 
@@ -117,7 +132,7 @@ func Decrypt(key, encrypted string) string {
 		result = append(result, char)
 	}
 
-	r := mapRuneToString(result, func(r rune) string { return string(r) })
+	r := MapSlice[rune, string](result, func(r rune) string { return string(r) })
 
 	return strings.Join(r, "")
 }
