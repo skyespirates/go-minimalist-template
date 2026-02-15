@@ -5,39 +5,12 @@ import (
 	"strings"
 )
 
-// map []string to []rune
-func mapStringToRune(in []string, f func(s string) rune) []rune {
-
-	result := []rune{}
-
-	for _, val := range in {
-		result = append(result, f(val))
-	}
-
-	return result
-
+func mapFn(s string) byte {
+	return []byte(s)[0]
 }
 
-// map []rune to []string
-func mapRuneToString(in []rune, f func(r rune) string) []string {
-
-	result := []string{}
-
-	for _, val := range in {
-		result = append(result, f(val))
-	}
-
-	return result
-
-}
-
-// contoh penggunaan generic
-type Char interface {
-	rune | string
-}
-
-func MapSlice[T Char, U Char](in []T, f func(T) U) []U {
-	result := make([]U, 0)
+func MapSlice(in []string, f func(string) byte) []byte {
+	result := []byte{}
 
 	for _, val := range in {
 		result = append(result, f(val))
@@ -46,9 +19,9 @@ func MapSlice[T Char, U Char](in []T, f func(T) U) []U {
 	return result
 }
 
-func findMatch(dictionary map[rune]rune, in rune) rune {
+func findMatch(dictionary map[byte]byte, in byte) byte {
 
-	var char rune
+	var char byte
 	v, ok := dictionary[in]
 
 	if !ok {
@@ -68,14 +41,11 @@ func findMatch(dictionary map[rune]rune, in rune) rune {
 
 }
 
-func getAlphabets() []rune {
-	alphabets := make([]rune, 0)
-	for i := 97; i <= 122; i++ {
-		char := rune(i)
-		alphabets = append(alphabets, char)
-	}
+var alphabets = "abcdefghijklmnopqrstuvwxyz"
 
-	return alphabets
+func getAlphabets() []byte {
+
+	return MapSlice(strings.Split(alphabets, ""), mapFn)
 }
 
 func GenerateKey() string {
@@ -95,11 +65,11 @@ func GenerateKey() string {
 
 func Encrypt(key, text string) string {
 	alphabets := getAlphabets()
-	splitKey := MapSlice[string, rune](strings.Split(key, ""), func(s string) rune { return []rune(s)[0] })
-	splitText := MapSlice[string, rune](strings.Split(text, ""), func(s string) rune { return []rune(s)[0] })
+	splitKey := MapSlice(strings.Split(key, ""), mapFn)
+	splitText := MapSlice(strings.Split(text, ""), mapFn)
 
-	result := []rune{}
-	dictionary := make(map[rune]rune)
+	result := []byte{}
+	dictionary := make(map[byte]byte)
 
 	for i, val := range alphabets {
 		dictionary[val] = splitKey[i]
@@ -115,16 +85,16 @@ func Encrypt(key, text string) string {
 
 func Decrypt(key, encrypted string) string {
 	alphabets := getAlphabets()
-	splitKey := MapSlice[string, rune](strings.Split(key, ""), func(s string) rune { return []rune(s)[0] })
-	splitEncrypted := MapSlice[string, rune](strings.Split(encrypted, ""), func(s string) rune { return []rune(s)[0] })
+	splitKey := MapSlice(strings.Split(key, ""), mapFn)
+	splitEncrypted := MapSlice(strings.Split(encrypted, ""), mapFn)
 
-	dictionary := make(map[rune]rune)
+	dictionary := map[byte]byte{}
 
 	for i, val := range splitKey {
 		dictionary[val] = alphabets[i]
 	}
 
-	result := []rune{}
+	result := []byte{}
 
 	for _, val := range splitEncrypted {
 		char := findMatch(dictionary, val)
@@ -132,7 +102,5 @@ func Decrypt(key, encrypted string) string {
 		result = append(result, char)
 	}
 
-	r := MapSlice[rune, string](result, func(r rune) string { return string(r) })
-
-	return strings.Join(r, "")
+	return string(result)
 }
