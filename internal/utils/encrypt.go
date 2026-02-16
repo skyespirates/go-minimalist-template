@@ -5,20 +5,6 @@ import (
 	"strings"
 )
 
-func mapFn(s string) byte {
-	return []byte(s)[0]
-}
-
-func MapSlice(in []string, f func(string) byte) []byte {
-	result := []byte{}
-
-	for _, val := range in {
-		result = append(result, f(val))
-	}
-
-	return result
-}
-
 func findMatch(dictionary map[byte]byte, in byte) byte {
 
 	var char byte
@@ -41,15 +27,10 @@ func findMatch(dictionary map[byte]byte, in byte) byte {
 
 }
 
-var alphabets = "abcdefghijklmnopqrstuvwxyz"
-
-func getAlphabets() []byte {
-
-	return MapSlice(strings.Split(alphabets, ""), mapFn)
-}
+const chars = "abcdefghijklmnopqrstuvwxyz"
 
 func GenerateKey() string {
-	alphabets := getAlphabets()
+	alphabets := []byte(chars)
 	stringKeys := make([]string, len(alphabets))
 	for i, val := range alphabets {
 		stringKeys[i] = string(val)
@@ -64,9 +45,9 @@ func GenerateKey() string {
 }
 
 func Encrypt(key, text string) string {
-	alphabets := getAlphabets()
-	splitKey := MapSlice(strings.Split(key, ""), mapFn)
-	splitText := MapSlice(strings.Split(text, ""), mapFn)
+	alphabets := []byte(chars)
+	splitKey := []byte(key)
+	splitText := []byte(text)
 
 	result := []byte{}
 	dictionary := make(map[byte]byte)
@@ -84,9 +65,9 @@ func Encrypt(key, text string) string {
 }
 
 func Decrypt(key, encrypted string) string {
-	alphabets := getAlphabets()
-	splitKey := MapSlice(strings.Split(key, ""), mapFn)
-	splitEncrypted := MapSlice(strings.Split(encrypted, ""), mapFn)
+	alphabets := []byte(chars)
+	splitKey := []byte(key)
+	splitEncrypted := []byte(encrypted)
 
 	dictionary := map[byte]byte{}
 
