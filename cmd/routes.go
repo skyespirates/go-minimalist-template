@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/skyespirates/go-minimalist-template/internal/delivery/http/handler"
@@ -25,10 +26,11 @@ func (app *application) routes() http.Handler {
 		log.Fatal(err)
 	}
 
+	fileServer := http.FileServer(http.FS(distFS))
+
 	taskHandler := handler.NewTaskHandler(usecase.NewTaskUsecase(pgsql.NewTaskRepository(app.db)))
 	userHandler := handler.NewUserHandler(usecase.NewUserUsecase(pgsql.NewUserRepository(app.db)))
 
-	router.Handler(http.MethodGet, "/", http.FileServer(http.FS(distFS)))
 	router.HandlerFunc(http.MethodGet, "/healthcheck", healthcheck)
 
 	router.HandlerFunc(http.MethodPost, "/v1/auth/register", userHandler.Register)
@@ -98,11 +100,34 @@ func (app *application) routes() http.Handler {
 
 	})
 
-	return app.loggerMiddleware(router)
-}
+	// router.NotFound = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	// 	// Try to serve static file first
+	// 	_, err := distFS.Open(strings.TrimPrefix(r.URL.Path, "/"))
+	// 	if err == nil {
+	// 		fileServer.ServeHTTP(w, r)
+	// 		return
+	// 	}
 
-func index(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Hello, Skyes! 😎"))
+	// 	// If file doesn't exist → serve index.html (SPA fallback)
+	// 	r.URL.Path = "/"
+	// 	fileServer.ServeHTTP(w, r)
+	// })
+
+	router.NotFound = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		// try to serve static file
+		_, err := distFS.Open(strings.TrimPrefix(r.URL.Path, "/"))
+		if err == nil {
+			fileServer.ServeHTTP(w, r)
+			return
+		}
+
+		// fallback to index.html
+		r.URL.Path = "/index.html"
+		fileServer.ServeHTTP(w, r)
+	})
+
+	return app.loggerMiddleware(router)
 }
 
 func healthcheck(w http.ResponseWriter, r *http.Request) {
