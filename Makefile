@@ -1,5 +1,20 @@
 migrations_path=./migrations
 dsn=postgres://postgres:secret@0.0.0.0:5432/api?sslmode=disable
+BINARY_NAME=app
+
+build: build-react build-go
+
+build-react:
+	cd ./client && npm.cmd run build
+	cp -r client/dist cmd/
+
+build-go:
+	go build -o $(BINARY_NAME).exe ./cmd/.
+
+clean:
+	rm -f $(BINARY_NAME).exe
+	rm -rf ./client/dist
+
 
 .PHONY: api/start
 api/start:

@@ -1,7 +1,10 @@
 package main
 
 import (
+	"embed"
 	"encoding/json"
+	"io/fs"
+	"log"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -11,13 +14,21 @@ import (
 	"github.com/skyespirates/go-minimalist-template/internal/utils"
 )
 
+//go:embed dist
+var embeddedFiles embed.FS
+
 func (app *application) routes() http.Handler {
 	router := httprouter.New()
+
+	distFS, err := fs.Sub(embeddedFiles, "dist")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	taskHandler := handler.NewTaskHandler(usecase.NewTaskUsecase(pgsql.NewTaskRepository(app.db)))
 	userHandler := handler.NewUserHandler(usecase.NewUserUsecase(pgsql.NewUserRepository(app.db)))
 
-	router.HandlerFunc(http.MethodGet, "/", index)
+	router.Handler(http.MethodGet, "/", http.FileServer(http.FS(distFS)))
 	router.HandlerFunc(http.MethodGet, "/healthcheck", healthcheck)
 
 	router.HandlerFunc(http.MethodPost, "/v1/auth/register", userHandler.Register)
@@ -29,7 +40,7 @@ func (app *application) routes() http.Handler {
 	router.HandlerFunc(http.MethodPut, "/v1/tasks/:id", app.authenticate(taskHandler.Update))
 	router.HandlerFunc(http.MethodDelete, "/v1/tasks/:id", taskHandler.Delete)
 
-	router.HandlerFunc(http.MethodPost, "/generate-key", func(w http.ResponseWriter, r *http.Request) {
+	router.HandlerFunc(http.MethodPost, "/api/generate-key", func(w http.ResponseWriter, r *http.Request) {
 		res := make(map[string]string)
 
 		res["key"] = utils.GenerateKey()
@@ -37,7 +48,7 @@ func (app *application) routes() http.Handler {
 		json.NewEncoder(w).Encode(res)
 	})
 
-	router.HandlerFunc(http.MethodPost, "/encrypt", func(w http.ResponseWriter, r *http.Request) {
+	router.HandlerFunc(http.MethodPost, "/api/encrypt", func(w http.ResponseWriter, r *http.Request) {
 		var input struct {
 			Key  string `json:"key"`
 			Text string `json:"text"`
@@ -63,7 +74,7 @@ func (app *application) routes() http.Handler {
 		}
 	})
 
-	router.HandlerFunc(http.MethodPost, "/decrypt", func(w http.ResponseWriter, r *http.Request) {
+	router.HandlerFunc(http.MethodPost, "/api/decrypt", func(w http.ResponseWriter, r *http.Request) {
 		var input struct {
 			Key  string `json:"key"`
 			Text string `json:"text"`
@@ -87,7 +98,7 @@ func (app *application) routes() http.Handler {
 
 	})
 
-	return app.loggerMiddleware(app.corsMiddleware(router))
+	return app.loggerMiddleware(router)
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
